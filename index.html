@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Loan Repayment Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .input-section {
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .input-field {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #34495e;
+        }
+        input, select {
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        .lump-sum-section {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .results-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .result-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        .result-card h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .result-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .comparison-table th {
+            background-color: #34495e;
+            color: white;
+        }
+        .comparison-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .highlight {
+            background-color: #d5f4e6 !important;
+        }
+        .savings {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .cost {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 Student Loan Repayment Calculator</h1>
+        
+        <div class="input-section">
+            <h2>Loan Details</h2>
+            <div class="input-group">
+                <div class="input-field">
+                    <label for="currentBalance">Current Total Balance</label>
+                    <input type="number" id="currentBalance" value="76228.71" step="0.01">
+                </div>
+                <div class="input-field">
+                    <label for="weightedRate">Weighted Average Interest Rate (%)</label>
+                    <input type="number" id="weightedRate" value="6.2" step="0.1">
+                </div>
+            </div>
+            
+            <h3>Repayment Plan Selection</h3>
+            <div class="input-group">
+                <div class="input-field">
+                    <label for="repaymentPlan">Choose Plan</label>
+                    <select id="repaymentPlan">
+                        <option value="paye">PAYE - $630/month</option>
+                        <option value="ibr">IBR - $630/month</option>
+                        <option value="icr">ICR - $865/month</option>
+                        <option value="extended">Extended Fixed - $509/month</option>
+                        <option value="standard">Standard - $476/month</option>
+                        <option value="custom">Custom Payment Amount</option>
+                    </select>
+                </div>
+                <div class="input-field">
+                    <label for="customPayment">Custom Monthly Payment (if selected)</label>
+                    <input type="number" id="customPayment" value="630" step="1">
+                </div>
+            </div>
+            
+            <div class="lump-sum-section">
+                <h3>💰 Lump Sum Payment</h3>
+                <div class="input-group">
+                    <div class="input-field">
+                        <label for="lumpSum">Lump Sum Amount</label>
+                        <input type="number" id="lumpSum" value="0" step="100">
+                    </div>
+                    <div class="input-field">
+                        <label for="lumpSumMonth">Apply in Month</label>
+                        <input type="number" id="lumpSumMonth" value="1" min="1" max="360">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="calculatePayoffs()" style="width: 100%; padding: 15px; background: #3498db; color: white; border: none; border-radius: 5px; font-size: 18px; cursor: pointer;">Calculate Repayment Scenarios</button>
+
+        <div class="results-section" id="results" style="display: none;">
+            <div class="result-card">
+                <h3>📊 With Lump Sum Payment</h3>
+                <div>Monthly Payment: <span class="result-value" id="monthlyPayment">$0</span></div>
+                <div>Lump Sum: <span class="result-value" id="lumpSumDisplay">$0</span></div>
+                <div>Total Paid: <span class="result-value" id="totalPaidWithLump">$0</span></div>
+                <div>Payoff Time: <span class="result-value" id="payoffTimeWithLump">0 months</span></div>
+            </div>
+            
+            <div class="result-card">
+                <h3>📈 Without Lump Sum (Baseline)</h3>
+                <div>Monthly Payment: <span class="result-value" id="baselinePayment">$0</span></div>
+                <div>Total Paid: <span class="result-value" id="totalPaidBaseline">$0</span></div>
+                <div>Payoff Time: <span class="result-value" id="payoffTimeBaseline">0 months</span></div>
+            </div>
+            
+            <div class="result-card">
+                <h3>💡 Savings Analysis</h3>
+                <div>Interest Saved: <span class="result-value savings" id="interestSaved">$0</span></div>
+                <div>Time Saved: <span class="result-value savings" id="timeSaved">0 months</span></div>
+                <div>Total Savings: <span class="result-value savings" id="totalSavings">$0</span></div>
+            </div>
+        </div>
+
+        <div id="comparisonSection" style="display: none; margin-top: 30px;">
+            <h2>📋 Quick Plan Comparison</h2>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Plan</th>
+                        <th>Monthly Payment</th>
+                        <th>Total Paid (No Lump Sum)</th>
+                        <th>Total Paid (With Lump Sum)</th>
+                        <th>Forgiveness Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="comparisonBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ Important Notes:</strong>
+            <ul>
+                <li>PAYE and IBR plans may result in forgiven debt being taxable income</li>
+                <li>Interest rates used are estimates - actual rates vary by loan</li>
+                <li>Income-driven plans recalculate annually based on income changes</li>
+                <li>Consider making lump sum payments toward highest interest rate loans first</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function calculatePayoffs() {
+            const balance = parseFloat(document.getElementById('currentBalance').value);
+            const annualRate = parseFloat(document.getElementById('weightedRate').value) / 100;
+            const monthlyRate = annualRate / 12;
+            const plan = document.getElementById('repaymentPlan').value;
+            const customPayment = parseFloat(document.getElementById('customPayment').value);
+            const lumpSum = parseFloat(document.getElementById('lumpSum').value) || 0;
+            const lumpSumMonth = parseInt(document.getElementById('lumpSumMonth').value);
+
+            // Define plan payments
+            const planPayments = {
+                'paye': 630,
+                'ibr': 630,
+                'icr': 865,
+                'extended': 509,
+                'standard': 476,
+                'custom': customPayment
+            };
+
+            const monthlyPayment = planPayments[plan];
+
+            // Calculate baseline (no lump sum)
+            const baseline = calculateAmortization(balance, monthlyRate, monthlyPayment, 0, 0);
+            
+            // Calculate with lump sum
+            const withLumpSum = calculateAmortization(balance, monthlyRate, monthlyPayment, lumpSum, lumpSumMonth);
+
+            // Update display
+            document.getElementById('monthlyPayment').textContent = `$${monthlyPayment}`;
+            document.getElementById('lumpSumDisplay').textContent = `$${lumpSum.toLocaleString()}`;
+            document.getElementById('totalPaidWithLump').textContent = `$${withLumpSum.totalPaid.toLocaleString()}`;
+            document.getElementById('payoffTimeWithLump').textContent = `${withLumpSum.months} months`;
+            
+            document.getElementById('baselinePayment').textContent = `$${monthlyPayment}`;
+            document.getElementById('totalPaidBaseline').textContent = `$${baseline.totalPaid.toLocaleString()}`;
+            document.getElementById('payoffTimeBaseline').textContent = `${baseline.months} months`;
+            
+            const interestSaved = baseline.totalPaid - withLumpSum.totalPaid;
+            const timeSaved = baseline.months - withLumpSum.months;
+            
+            document.getElementById('interestSaved').textContent = `$${interestSaved.toLocaleString()}`;
+            document.getElementById('timeSaved').textContent = `${timeSaved} months`;
+            document.getElementById('totalSavings').textContent = `$${interestSaved.toLocaleString()}`;
+
+            // Show results
+            document.getElementById('results').style.display = 'grid';
+            
+            // Generate comparison table
+            generateComparisonTable(balance, monthlyRate, lumpSum, lumpSumMonth);
+            document.getElementById('comparisonSection').style.display = 'block';
+        }
+
+        function calculateAmortization(principal, monthlyRate, payment, lumpSum, lumpSumMonth) {
+            let balance = principal;
+            let totalPaid = 0;
+            let months = 0;
+            const maxMonths = 360; // 30 years max
+
+            while (balance > 0.01 && months < maxMonths) {
+                months++;
+                
+                // Calculate interest for this month
+                const interestPayment = balance * monthlyRate;
+                let principalPayment = payment - interestPayment;
+                
+                // Apply lump sum if this is the right month
+                if (months === lumpSumMonth && lumpSum > 0) {
+                    principalPayment += lumpSum;
+                    totalPaid += lumpSum;
+                }
+                
+                // Don't overpay
+                if (principalPayment > balance) {
+                    principalPayment = balance;
+                }
+                
+                balance -= principalPayment;
+                totalPaid += Math.min(payment, interestPayment + principalPayment);
+                
+                // If payment doesn't cover interest, add to balance (negative amortization)
+                if (payment < interestPayment) {
+                    balance += (interestPayment - payment);
+                }
+            }
+
+            return {
+                months: months,
+                totalPaid: Math.round(totalPaid),
+                finalBalance: Math.max(0, balance)
+            };
+        }
+
+        function generateComparisonTable(balance, monthlyRate, lumpSum, lumpSumMonth) {
+            const plans = [
+                { name: 'PAYE', payment: 630, forgiveness: 42951 },
+                { name: 'IBR', payment: 630, forgiveness: 42041 },
+                { name: 'ICR', payment: 865, forgiveness: 0 },
+                { name: 'Extended Fixed', payment: 509, forgiveness: 0 },
+                { name: 'Standard', payment: 476, forgiveness: 0 }
+            ];
+
+            const tbody = document.getElementById('comparisonBody');
+            tbody.innerHTML = '';
+
+            plans.forEach(plan => {
+                const baseline = calculateAmortization(balance, monthlyRate, plan.payment, 0, 0);
+                const withLump = calculateAmortization(balance, monthlyRate, plan.payment, lumpSum, lumpSumMonth);
+                
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td><strong>${plan.name}</strong></td>
+                    <td>$${plan.payment}</td>
+                    <td>$${baseline.totalPaid.toLocaleString()}</td>
+                    <td>$${withLump.totalPaid.toLocaleString()}</td>
+                    <td>${plan.forgiveness > 0 ? '$' + plan.forgiveness.toLocaleString() : 'None'}</td>
+                `;
+            });
+        }
+
+        // Initialize with default calculation
+        document.addEventListener('DOMContentLoaded', function() {
+            calculatePayoffs();
+        });
+    </script>
+</body>
+</html>
